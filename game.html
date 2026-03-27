@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head><title>Game</title></head>
+<body>
+
+<h1>🎰 Jackpot Online</h1>
+<div>💰 <span id="coins"></span></div>
+<button onclick="spin()">SPIN</button>
+
+<h2 id="result"></h2>
+
+<h3>🏆 Leaderboard</h3>
+<ul id="board"></ul>
+
+<script>
+let user = JSON.parse(localStorage.getItem("user"));
+let coins = user.coins;
+
+document.getElementById("coins").innerText = coins;
+
+function rand(){
+  let items = ["🍒","🍋","💎","7️⃣"];
+  return items[Math.floor(Math.random()*items.length)];
+}
+
+async function spin(){
+  coins -= 10;
+
+  let a = rand();
+  let b = rand();
+  let c = rand();
+
+  if(a===b && b===c){
+    coins += 100;
+    result.innerText = "JACKPOT!";
+  } else {
+    result.innerText = "Coba lagi";
+  }
+
+  document.getElementById("coins").innerText = coins;
+
+  await fetch("/update",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({username:user.username, coins:coins})
+  });
+}
+
+async function loadBoard(){
+  let res = await fetch("/leaderboard");
+  let data = await res.json();
+
+  board.innerHTML = "";
+  data.forEach(u=>{
+    board.innerHTML += `<li>${u.username} - ${u.coins}</li>`;
+  });
+}
+
+loadBoard();
+</script>
+
+</body>
+</html>
